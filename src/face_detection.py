@@ -4,13 +4,13 @@ import imutils
 import os
 import numpy as np
 
+
 HOME = os.getcwd()
 PROTO_PATH = os.path.join(HOME,'model/deploy.prototxt.txt')
 MODEL_PATH = os.path.join(HOME,'model/res10_300x300_ssd_iter_140000.caffemodel')
 UPLOAD_PATH = os.path.join(HOME, 'uploads/')
 
 net = cv2.dnn.readNetFromCaffe(PROTO_PATH, MODEL_PATH)
-
 
 def aabb(x1, y1, w1, h1, x2, y2, w2, h2):
     """Basic AABB collision"""
@@ -19,14 +19,12 @@ def aabb(x1, y1, w1, h1, x2, y2, w2, h2):
            y1 < y2 + h2 and \
            y1 + h1 > y2
 
-
-def save_img(img, path):
-    """Save an image"""
+def save_img(img, path) -> None:
+    """Save an image by filepath"""
     try:
         img.save(os.path.join(UPLOAD_PATH, path))
     except Exception as e:
         print(e)
-
 
 # def update_locations(prev, new):
 #     """For finding the closest faces to the previous frame and reordering based on that
@@ -51,15 +49,15 @@ def save_img(img, path):
 #
 #     return [new[i] for i in ordering]
 
-
-def detect_img(filename, thresh=0.7):
+def detect_img(bytes, thresh=0.7):
     """Detect faces in an image"""
-    img = cv2.imread(filename)
+    img = cv2.imdecode(bytes, cv2.IMREAD_COLOR)
+
     (h, w) = img.shape[:2]
     img = imutils.resize(img, width=600)
     locations = []
 
-    blob = cv2.dnn.blobFromImage(img, 1.0, (w, h), [104, 117, 123], False, False,)
+    blob = cv2.dnn.blobFromImage(img, 1.0, (600, img.shape[1]), [104, 117, 123], False, False,)
 
     net.setInput(blob)
     faces = net.forward()
@@ -75,17 +73,24 @@ def detect_img(filename, thresh=0.7):
 
     return [x.tolist() for x in locations]
 
-
-def blur_faces_img(filename, locations: list, path: str):
+def blur_faces_img(bytes, locations: list, blur_amt: int = 16, filetype: str = 'png'):
     """Save image with blur effect applied"""
-    img = cv2.imread(filename)
+    img = cv2.imdecode(bytes, cv2.IMREAD_COLOR)
+    w, h = img.shape[:2]
+    blur_count = 0
 
     for face in locations:
         [y1, x1, y2, x2] = face 
-        blur_segment = img[x1:x2, y1:y2]
-        img[x1:x2, y1:y2] = cv2.GaussianBlur(blur_segment, (21, 21), 0)
+        if x2 < w and y2 < h:
+            blur_count += 1
+            blur_segment = img[x1:x2, y1:y2]
+            img[x1:x2, y1:y2] = cv2.GaussianBlur(blur_segment, (0, 0), sigmaX=blur_amt, borderType=cv2.BORDER_DEFAULT)
+    
+    if blur_count == 0:
+        raise Exception('Detected faces out of range')
 
-    cv2.imwrite(path, img)
+    cv2.imwrite(os.path.join(UPLOAD_PATH,f'out{filetype}'), img)
+    return cv2.imencode(filetype, img)[1].tobytes()
 
 # def blur_video(f, blur_faces=True):
 #     """
