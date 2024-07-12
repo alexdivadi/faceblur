@@ -3,7 +3,10 @@ import imutils
 #import dlib
 import os
 import numpy as np
+from retinaface import RetinaFace
+from deepface import DeepFace
 
+from face import Face
 
 HOME = os.getcwd()
 PROTO_PATH = os.path.join(HOME,'model/deploy.prototxt.txt')
@@ -11,13 +14,6 @@ MODEL_PATH = os.path.join(HOME,'model/res10_300x300_ssd_iter_140000.caffemodel')
 UPLOAD_PATH = os.path.join(HOME, 'uploads/')
 
 net = cv2.dnn.readNetFromCaffe(PROTO_PATH, MODEL_PATH)
-
-def aabb(x1, y1, w1, h1, x2, y2, w2, h2):
-    """Basic AABB collision"""
-    return x1 < x2 + w2 and \
-           x1 + w1 > x2 and \
-           y1 < y2 + h2 and \
-           y1 + h1 > y2
 
 def save_img(img, path) -> None:
     """Save an image by filepath"""
@@ -49,29 +45,50 @@ def save_img(img, path) -> None:
 #
 #     return [new[i] for i in ordering]
 
-def detect_img(bytes, thresh=0.7):
+def detect_img(path, thresh=0.7):
     """Detect faces in an image"""
-    img = cv2.imdecode(bytes, cv2.IMREAD_COLOR)
+    faces = RetinaFace.detect_faces(path)
+    return [face["facial_area"] for face in faces.values() if face["score"] > thresh]
 
-    (h, w) = img.shape[:2]
-    img = imutils.resize(img, width=600)
-    locations = []
+def detect_video(path):
+    video = cv2.VideoCapture(path)
 
-    blob = cv2.dnn.blobFromImage(img, 1.0, (600, img.shape[1]), [104, 117, 123], False, False,)
+    seen_faces = []
 
-    net.setInput(blob)
-    faces = net.forward()
+    frame_count = 0
+    while video.isOpened():
+        ret, frame = video.read()
+        if not ret:
+            break
+        
+        # Extract faces from the frame
+        try:
+            detected_faces = RetinaFace.detect_faces(frame)
+            
+            for face in detected_faces.values():
+                face_already_seen = False
+                
+                for seen_face in seen_faces:
+                    # Compare the current face with seen faces
+                    result = DeepFace.verify(face, seen_face, model_name='VGG-Face', enforce_detection=False)
+                    if result['verified']:
+                        face_already_seen = True
+                        seen_face.add_detection(result['facial_area'], frame_count, result['score'])
+                        break
+                
+                if not face_already_seen:
+                    new_face = Face(label=f"face_{len(seen_faces) + 1}")
+                    new_face.add_bounding_box(face['facial_area'], frame_count)
+                    seen_faces.append(new_face)
+                    print(f"New face detected at frame {frame_count}")
+                    
+        except Exception as e:
+            print(f"Error detecting face in frame {frame_count}: {e}")
+        
+        frame_count += 1
 
-    for i in range(0, faces.shape[2]):
-        confidence = faces[0, 0, i, 2]
-
-        if confidence < thresh:
-            continue
-
-        face = faces[0, 0, i, 3:7] * np.array([w, h, w, h])
-        locations.append(face.astype("int"))
-
-    return [x.tolist() for x in locations]
+    video.release()
+    return seen_faces
 
 def blur_faces_img(bytes, locations: list, blur_amt: int = 16, filetype: str = 'png'):
     """Save image with blur effect applied"""
