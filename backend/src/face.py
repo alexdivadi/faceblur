@@ -1,10 +1,10 @@
 class Face:
     def __init__(self, label):
-        self.label = label
-        self.detections = []
+        self.label: str = label
+        self.detections: list[tuple] = []
     
-    def add_detection(self, bounding_box, frame_number, confidence):
-        self.detections.append((bounding_box, frame_number, confidence))
+    def add_detection(self, frame, bbox, score):
+        self.detections.append((frame, bbox, score))
 
     def get_highest_confidence(self):
-        return max(self.detections, key=lambda x: x[2], default=None)
+        return max(self.detections, key=lambda x: x[-1], default=None)
