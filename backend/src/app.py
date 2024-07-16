@@ -1,12 +1,14 @@
 import base64
 from pathlib import Path
-from flask import Flask, request, send_file
+from flask import Flask, request, Response
+from flask_cors import CORS
 from werkzeug.utils import secure_filename
 from face_detection import detect_img, save, blur_faces_img, detect_video
 import os
 import json
 
 app = Flask(__name__)
+CORS(app)
 
 @app.route('/detect', methods=['POST'])
 def detect():
@@ -40,7 +42,7 @@ def detect():
             'args': e.args,
         }
 
-    return response
+    return Response(json.dumps(response))
 
 @app.route('/blur', methods=['POST'])
 def blur():
@@ -61,7 +63,7 @@ def blur():
             
             data, h, w = blur_faces_img(uploaded_file, detections=detections, filetype=ext)
             data = base64.b64encode(data).decode() 
-            
+
             response['img'] = data
             response['size'] = [w, h]
             response['mimetype'] = mimetype
@@ -75,7 +77,7 @@ def blur():
             'args': e.args,
         }
 
-    return response
+    return Response(json.dumps(response))
 
 
 if __name__ == "__main__":

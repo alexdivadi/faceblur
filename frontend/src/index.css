@@ -1,0 +1,43 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html {
+    margin: 0;
+    height: 100%;
+}
+
+html:before {
+  content: "";
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  position: fixed;
+  background: linear-gradient(to bottom right, #fad9eb, #feecfe, #edb2fc);
+}
+
+body{
+  overscroll-behavior: auto;
+  position: relative;
+  background: transparent;
+}
+
+.active{
+    pointer-events: none;
+    /* Add whatever CSS style will make your link look active. The example below (in my case) */
+    @apply block py-2 pl-3 pr-4 text-white bg-amber-500 rounded md:bg-transparent md:text-amber-500 md:p-0;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
