@@ -3,9 +3,9 @@ import time
 import cv2
 import numpy as np
 
-from face import Face
-from sface import SFace
-from yunet import YuNet
+from .face import Face
+from .sface import SFace
+from .yunet import YuNet
 
 HOME = os.getcwd()
 DETECTION_MODEL_PATH = os.path.join(HOME, "model/face_detection_yunet_2023mar.onnx")
@@ -142,24 +142,18 @@ def blur_faces_img(path, detections: list, filetype: str = 'png'):
     """Save image with blur effect applied"""
     img = cv2.imread(path, cv2.IMREAD_COLOR)
     img_h, img_w = img.shape[:2]
-    blur_count = 0
 
     for face in detections:
         [x1, y1, w, h] = face 
-        x2 = x1 + w
-        y2 = y1 + h
+        x2 = min(x1 + w, img_w)
+        y2 = min(y1 + h, img_h)
+        x1 = max(x1, 0)
+        y1 = max(y1, 0)
         k = 2 * int(min(w, h) * 0.2) + 1
 
-        if y2 < img_h and x2 < img_w:
-            blur_count += 1
-            blur_segment = img[y1:y2, x1:x2]
-            img[y1:y2, x1:x2] = cv2.GaussianBlur(blur_segment, (k, k), 0, borderType=cv2.BORDER_DEFAULT)
-    
-    if blur_count == 0:
-        raise Exception('Detected faces out of range')
+        blur_segment = img[y1:y2, x1:x2]
+        img[y1:y2, x1:x2] = cv2.GaussianBlur(blur_segment, (k, k), 0, borderType=cv2.BORDER_DEFAULT)
 
-    # new_path = os.path.join(UPLOAD_PATH, f'blurred_{path}')
-    # cv2.imwrite(new_path, img)
     return cv2.imencode(filetype, img)[1].tobytes(), img_h, img_w
 
 # def blur_video(f, blur_faces=True):
