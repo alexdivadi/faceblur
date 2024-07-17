@@ -1,11 +1,13 @@
 from pathlib import Path
-from flask import request, Response
+from flask import Flask, request, Response
+from flask_cors import CORS
 from werkzeug.utils import secure_filename
 import base64
 import json
-from backend import app
-from backend.src.face_detection import detect_img, save, blur_faces_img, detect_video
+from src.face_detection import detect_img, save, blur_faces_img, detect_video
 
+app = Flask(__name__)
+CORS(app)
 
 @app.route('/detect', methods=['POST'])
 def detect():
