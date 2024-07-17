@@ -3,8 +3,8 @@ from flask import request, Response
 from werkzeug.utils import secure_filename
 import base64
 import json
-from . import app
-from .src.face_detection import detect_img, save, blur_faces_img, detect_video
+from backend import app
+from backend.src.face_detection import detect_img, save, blur_faces_img, detect_video
 
 
 @app.route('/detect', methods=['POST'])
