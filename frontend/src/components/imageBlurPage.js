@@ -1,5 +1,5 @@
 import FileUploader from './fileUploader';
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import AsyncButton from './asyncButton.js';
 import useAsync from './useAsync.js';
 
@@ -12,9 +12,13 @@ const fetchFaceDetections = async (file) => {
         body: formData,
     });
     if (!response.ok) {
-        throw new Error('Error fetching face detections');
+        throw new Error('Error fetching face detections: bad request.');
     }
     const data = await response.json();
+    if (data.error) {
+        console.log(data.error);
+        throw new Error(`Error fetching face detections.`);
+    }
     return data.faces;
 };
 
@@ -34,7 +38,8 @@ const fetchBlurredImage = async (file, detections) => {
     const data = await response.json();
 
     if (data.error) {
-        throw new Error(`Error blurring face: ${data.error.args}`);
+        console.log(data.error);
+        throw new Error(`Error blurring face.`);
     }
 
     const byteCharacters = atob(data.img);
@@ -55,10 +60,27 @@ function ImageBlurPage() {
     const [file, setFile] = useState(null);
     const [faceVisibility, setFaceVisibility] = useState([]);
     const { loading, error, result: faces, execute: uploadFile } = useAsync(fetchFaceDetections);
+    const imageRef = useRef(null);
+    const [imageHeight, setImageHeight] = useState(null)
 
-    const imageElement = document.getElementById('uploaded-image');
-    const imageWidth = (image && imageElement) ? imageElement.naturalWidth : 0;
-    const imageHeight = (image && imageElement) ? imageElement.naturalHeight : 0;
+    useEffect(() => {
+        function handleResize() {
+            if (imageRef?.current) {
+                setImageHeight(imageRef.current.height);
+            }
+        }
+
+        // Initial size
+        handleResize();
+
+        // Listen to window resize events
+        window.addEventListener('resize', handleResize);
+
+        // Clean up the event listener
+        return () => {
+            window.removeEventListener('resize', handleResize);
+        };
+    }, [loading]);
 
     const onUpload = useCallback(async (file) => {
         setFile(file);
@@ -85,53 +107,72 @@ function ImageBlurPage() {
     }, []);
 
     return (
-        <div className="container content-center w-screen ml-20">
-            <div className='bg-white items-center max-w-full p-20 rounded-xl'>
-                <div className="text-left">
-                    <h1 className="text-6xl font-bold mb-10">Blur an Image</h1>
-                    <h3 className="text-2xl mb-10">Upload image here</h3>
-                    <div className='block'>
-                        <FileUploader onUpload={onUpload} />
-                        {loading && <div className="text-center mt-4">Loading...</div>}
-                        {error && (
-                            <div className="text-center mt-4 text-red-500">
-                                {error}
-                                <button
-                                    onClick={() => uploadFile(file)}
-                                    className="ml-4 p-2 bg-blue-500 text-white rounded"
-                                >
-                                    Retry
-                                </button>
-                            </div>
-                        )}
-                        {image && (
-                            <div className='items-center text-center'>
-                                <div className="container relative mt-4 max-w-fit">
-                                    <img id='uploaded-image' src={image} alt="Uploaded" className="block mx-auto" />
-                                    {faces && faces.map(([x, y, w, h], index) => (
-                                        <div
-                                            key={index}
-                                            onClick={() => toggleFaceVisibility(index)}
-                                            className={`absolute border-4 border-red-500 border-solid`}
-                                            style={{
-                                                top: `${(y / imageHeight) * 100}%`,
-                                                left: `${(x / imageWidth) * 100}%`,
-                                                width: `${(w / imageWidth) * 100}%`,
-                                                height: `${(h / imageHeight) * 100}%`,
-                                                opacity: faceVisibility[index] ? 1 : 0.5,
-                                                filter: faceVisibility[index] ? 'none' : 'grayscale(100%)',
-                                                borderRadius: '8px',
-                                            }}
-                                        />
-                                    ))}
+        <div className="container content-center w-screen ml-10 mb-10">
+            <div className='container bg-white max-w-full lg:h-[80vh] p-16 rounded-xl'>
+                <div className="flex flex-col px-4 h-full w-full max-w-full items-center lg:flex-row justify-between">
+                    <div className='flex-1 flex flex-col lg:mb-0 mb-10 max-w-lg justify-center'>
+                        <h1 className="text-5xl font-bold mb-10">Blur an Image</h1>
+                        <h1 className='text-2xl mb-5 text-wrap'>After uploading an image, tap on the 🟥 faces you want to keep unblurred.</h1>
+                        <h1>Upload an image here.</h1>
+                        <div className='text-center items-center block mr-6 w-full'>
+                            <FileUploader onUpload={onUpload} />
+                            {error && (
+                                <div className="text-center mt-4 text-red-500">
+                                    {error}
+                                    <button
+                                        onClick={() => uploadFile(file)}
+                                        className="ml-4 p-2 bg-blue-500 text-white rounded"
+                                    >
+                                        Retry
+                                    </button>
                                 </div>
+                            )}
+                            {image && (<div className='flex justify-between'>
+                                <div className='text-xl p-6 mt-4'>{loading ? "Loading..." : (faces && faces.length > 0 ? faces.length : "No") + " face(s) detected"}</div>
                                 {file && faces && (<AsyncButton title="Blur Image!" onClick={async () => {
                                     const detections = faces.filter((_, index) => faceVisibility[index]);
                                     await fetchBlurredImage(file, detections)
-                                }} />)}
+                                }}
+                                    disabled={loading || (faces && faces.length === 0)} />)}
                             </div>
-                        )}
-
+                            )}
+                        </div>
+                    </div>
+                    <div id='preview' className='flex-1 ml-10 flex justify-center container h-full w-full'
+                        style={imageRef.current && imageRef.current.naturalHeight <= imageRef.current.naturalWidth ? { alignItems: 'center' } : {}}>
+                        {image && <div className='relative'>
+                            {loading && <div
+                                className={`absolute inset-0 bg-white opacity-50 flex items-center justify-center`}
+                            >
+                                Loading...
+                            </div>}
+                            <img
+                                ref={imageRef}
+                                id='uploaded-image'
+                                src={image}
+                                alt="Uploaded"
+                                className="block w-full max-h-full object-contain justify-self-center" />
+                            <div className='absolute inset-0 max-h-full ' style={{ maxHeight: imageHeight ? `${imageHeight}px` : "auto" }}>
+                                {faces && !loading && faces.map(([x, y, w, h], index) => (
+                                    <div
+                                        key={index}
+                                        onClick={() => toggleFaceVisibility(index)}
+                                        className={`absolute border-4 border-red-500 border-solid max-w-full`}
+                                        style={{
+                                            top: `${(y / imageRef.current.naturalHeight) * 100}%`,
+                                            left: `${(x / imageRef.current.naturalWidth) * 100}%`,
+                                            height: `${(h / imageRef.current.naturalHeight) * 100}%`,
+                                            width: `${(w / imageRef.current.naturalWidth) * 100}%`,
+                                            opacity: faceVisibility[index] ? 1 : 0.5,
+                                            filter: faceVisibility[index] ? 'none' : 'grayscale(100%)',
+                                            borderRadius: '2px',
+                                        }}
+                                    />
+                                )
+                                )}
+                            </div>
+                        </div>
+                        }
                     </div>
                 </div>
             </div>
