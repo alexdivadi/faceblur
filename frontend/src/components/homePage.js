@@ -22,14 +22,10 @@ function HomePage() {
                     </button>
                 </div>
             </div>
-            <div className='bg-white w-screen px-40 py-20'>
+            <div className='bg-white w-screen px-40 py-20 mb-10'>
                 <div className="text-left">
                     <h1 className="text-4xl font-bold mb-4">Protect Privacy</h1>
-                </div>
-            </div>
-            <div className='mx-40 my-20 px-20 py-20 bg-gradient-to-t to-yellow-100 from-slate-50 rounded-lg'>
-                <div className="text-left">
-                    <h1 className="text-4xl font-bold mb-4">Protect Privacy</h1>
+                    <h1 className='text-xl'>Prevent posting identities online.</h1>
                 </div>
             </div>
         </div>
