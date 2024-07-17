@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 
-function FileUploader({ onUpload }) {
+function FileUploader({ onUpload, accept }) {
     const maxSize = 1048576;
 
     const onDrop = useCallback((acceptedFiles) => {
@@ -20,7 +20,12 @@ function FileUploader({ onUpload }) {
         rejectedFiles
     } = useDropzone({
         onDrop: onDrop,
-        accept: { 'image/*': [] }
+        accept: accept ?? {
+            'image/jpeg': [],
+            'image/tiff': [],
+            'image/png': [],
+            'image/webp': [],
+        }
     });
 
     const isFileTooLarge = rejectedFiles
@@ -48,7 +53,7 @@ function FileUploader({ onUpload }) {
                     )}
                 </h3>
                 <p className="mt-1 text-xs text-gray-500">
-                    PNG, JPG up to 10MB
+                    Any image file up to 10MB
                 </p>
             </div>
         </div>
