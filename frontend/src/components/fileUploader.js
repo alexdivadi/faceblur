@@ -9,14 +9,13 @@ function FileUploader({ onUpload, accept }) {
             const selectedFile = acceptedFiles[0];
             onUpload(selectedFile);
         }
-    }, []);
+    }, [onUpload]);
 
     const {
         getRootProps,
         getInputProps,
         isDragActive,
         isDragReject,
-        acceptedFiles,
         rejectedFiles
     } = useDropzone({
         onDrop: onDrop,
