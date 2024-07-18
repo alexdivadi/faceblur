@@ -7,7 +7,7 @@ const fetchFaceDetections = async (file) => {
     const formData = new FormData();
     formData.append('image', file);
     formData.append('type', 'image');
-    const response = await fetch('http://localhost:5000/detect', {
+    const response = await fetch('https://faceblur-production.up.railway.app/detect', {
         method: 'POST',
         body: formData,
     });
@@ -27,7 +27,7 @@ const fetchBlurredImage = async (file, detections) => {
     formData.append('image', file);
     formData.append('detections', JSON.stringify(detections));
     formData.append('type', 'image');
-    const response = await fetch('http://localhost:5000/blur', {
+    const response = await fetch('https://faceblur-production.up.railway.app/blur', {
         method: 'POST',
         body: formData,
         responseType: 'blob',
