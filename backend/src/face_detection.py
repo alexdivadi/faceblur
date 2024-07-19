@@ -5,12 +5,13 @@ import numpy as np
 
 from src.face import Face
 from src.sface import SFace
+from src.styles import BlurStyle
 from src.yunet import YuNet
+from src.file import HOME
 
-HOME = os.getcwd()
+
 DETECTION_MODEL_PATH = os.path.join(HOME, "model/face_detection_yunet_2023mar.onnx")
 RECOGNITION_MODEL_PATH = os.path.join(HOME, "model/face_recognition_sface_2021dec.onnx")
-UPLOAD_PATH = os.path.join(HOME, 'uploads/')
 
 (major_ver, minor_ver, subminor_ver) = (cv2.__version__).split('.')
 
@@ -26,12 +27,6 @@ face_detector_hi: YuNet = YuNet(modelPath=DETECTION_MODEL_PATH,
               topK=5000)
 
 face_recognizor: SFace = SFace(modelPath=RECOGNITION_MODEL_PATH)
-
-def save(file, path) -> str:
-    """Save an image by filepath"""
-    new_path = os.path.join(UPLOAD_PATH, path)
-    file.save(new_path)
-    return new_path
 
 # def update_locations(prev, new):
 #     """For finding the closest faces to the previous frame and reordering based on that
@@ -56,11 +51,8 @@ def save(file, path) -> str:
 #
 #     return [new[i] for i in ordering]
 
-def detect_img(path):
+def detect_img(img: cv2.typing.MatLike):
     """Detect faces in an image"""
-
-    img = cv2.imread(path, cv2.IMREAD_COLOR)
-
     height, width, _ = img.shape
     face_detector.setInputSize([width, height])
 
@@ -69,6 +61,10 @@ def detect_img(path):
     return [list(map(int, face[:4])) for face in faces]
 
 def detect_video(path, min_seconds: float = 0.5):
+    """
+    Detect significant faces in a video
+    The intended purpose is to check which faces the user may want to avoid blurring out.
+    """
     video = cv2.VideoCapture(path)
 
     if int(major_ver)  < 3 :
@@ -138,9 +134,12 @@ def detect_video(path, min_seconds: float = 0.5):
 
     return seen_faces
 
-def blur_faces_img(path, detections: list, filetype: str = 'png'):
-    """Save image with blur effect applied"""
-    img = cv2.imread(path, cv2.IMREAD_COLOR)
+def blur_faces_img(img: cv2.typing.MatLike, detections: list, filetype: str = 'png') -> tuple[bytes, int, int]:
+    """
+    Save image with blur effect applied
+    
+    Returns: bytes, height, width
+    """
     img_h, img_w = img.shape[:2]
 
     for face in detections:
@@ -155,6 +154,45 @@ def blur_faces_img(path, detections: list, filetype: str = 'png'):
         img[y1:y2, x1:x2] = cv2.GaussianBlur(blur_segment, (k, k), 0, borderType=cv2.BORDER_DEFAULT)
 
     return cv2.imencode(filetype, img)[1].tobytes(), img_h, img_w
+
+def smile_faces_img(img: cv2.typing.MatLike, detections: list, filetype: str = 'png') -> tuple[bytes, int, int]:
+    """
+    Save image with smiley face effect applied
+    
+    Returns: bytes, height, width
+    """
+    img_h, img_w = img.shape[:2]
+    smiley_face: cv2.typing.MatLike = cv2.imread(os.path.join(HOME, "assets/smiling-emoji.png"), -1)
+
+    for face in detections:
+        [x1, y1, w, h] = face 
+        x2 = min(x1 + w, img_w)
+        y2 = min(y1 + h, img_h)
+        x1 = max(x1, 0)
+        y1 = max(y1, 0)
+        resized_smile = cv2.resize(smiley_face, (w, h))
+        alpha_s = resized_smile[:, :, 3] / 255.0
+        alpha_l = 1.0 - alpha_s
+
+        for c in range(3):
+            img[y1:y2, x1:x2, c] = (alpha_s * resized_smile[:, :, c] +
+                              alpha_l * img[y1:y2, x1:x2, c])
+
+    return cv2.imencode(filetype, img)[1].tobytes(), img_h, img_w
+
+def obscure_faces(style:BlurStyle, img: cv2.typing.MatLike, detections: list, filetype: str):
+    """
+    Save image with chosen blur effect applied
+    
+    Returns: bytes, height, width
+    """
+    match style:
+        case BlurStyle.BLUR:
+            return blur_faces_img(img, detections, filetype)
+        case BlurStyle.SMILE:
+            return smile_faces_img(img, detections, filetype)
+        case _:
+            raise ValueError(f'Function `obscure_faces` received an invalid style: {style}')
 
 # def blur_video(f, blur_faces=True):
 #     """
