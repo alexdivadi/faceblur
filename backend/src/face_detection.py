@@ -3,9 +3,9 @@ import time
 import cv2
 import numpy as np
 
-from .face import Face
-from .sface import SFace
-from .yunet import YuNet
+from src.face import Face
+from src.sface import SFace
+from src.yunet import YuNet
 
 HOME = os.getcwd()
 DETECTION_MODEL_PATH = os.path.join(HOME, "model/face_detection_yunet_2023mar.onnx")
