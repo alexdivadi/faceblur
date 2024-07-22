@@ -12,8 +12,8 @@ body {
 }
 
 html {
-    margin: 0;
-    height: 100%;
+  margin: 0;
+  height: 100%;
 }
 
 html:before {
@@ -25,16 +25,16 @@ html:before {
   background: linear-gradient(to bottom right, #fad9eb, #feecfe, #edb2fc);
 }
 
-body{
+body {
   overscroll-behavior: auto;
   position: relative;
   background: transparent;
 }
 
-.active{
-    pointer-events: none;
-    /* Add whatever CSS style will make your link look active. The example below (in my case) */
-    @apply block py-2 pl-3 pr-4 text-white bg-amber-500 rounded md:bg-transparent md:text-amber-500 md:p-0;
+.active {
+  pointer-events: none;
+  /* Add whatever CSS style will make your link look active. The example below (in my case) */
+  @apply block rounded bg-transparent text-amber-500;
 }
 
 code {
