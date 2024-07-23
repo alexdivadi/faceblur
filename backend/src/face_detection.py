@@ -170,7 +170,7 @@ def smile_faces_img(img: cv2.typing.MatLike, detections: list, filetype: str = '
         y2 = min(y1 + h, img_h)
         x1 = max(x1, 0)
         y1 = max(y1, 0)
-        resized_smile = cv2.resize(smiley_face, (w, h))
+        resized_smile = cv2.resize(smiley_face, (x2-x1, y2-y1))
         alpha_s = resized_smile[:, :, 3] / 255.0
         alpha_l = 1.0 - alpha_s
 
