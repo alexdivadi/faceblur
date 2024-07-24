@@ -4,6 +4,9 @@ by David Allen
 A face-blurring app made with AI
 Before you post an image with faces in the background, consider this: would you want your face out there?
 
+![image](https://github.com/user-attachments/assets/c1f8141f-b067-4892-9772-0575c0cac9ed)
+
+
 ## Features
 
 - Automatically detect faces in photo uploads using AI
