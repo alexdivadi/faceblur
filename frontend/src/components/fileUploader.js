@@ -20,10 +20,15 @@ function FileUploader({ onUpload, accept }) {
     } = useDropzone({
         onDrop: onDrop,
         accept: accept ?? {
-            'image/jpeg': [],
-            'image/tiff': [],
-            'image/png': [],
-            'image/webp': [],
+            'image/jpeg': ['.jpeg', '.jpg', '.jpe', '.jp2'],
+            'image/tiff': ['.tiff', '.tif'],
+            'image/png': ['.png'],
+            'image/webp': ['.webp'],
+            'image/bmp': ['.bmp'],
+            'image/x-portable-bitmap': ['.pbm'],
+            'image/x-portable-anymap': ['.pnm'],
+            'image/x-pict': ['.pic'],
+            'image/x-cmu-raster': ['.ras'],
         }
     });
 
