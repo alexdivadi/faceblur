@@ -16,7 +16,10 @@ function AsyncButton({
     >
 
         {!error && (loading ? "Loading..." : title)}
-        {error && <span className="text-red-800 ml-2">Error: {error.message ?? "Something went wrong."} Retry</span>}
+        {error && <span className="text-red-800 ml-2">
+            Error: {error.message ?? "Something went wrong. "}
+            <span className='text-white'>Retry</span>
+        </span>}
     </button>
 
 }

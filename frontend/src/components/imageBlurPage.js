@@ -136,8 +136,8 @@ function ImageBlurPage() {
                                     </button>
                                 </div>
                             )}
-                            {image && (<div className='flex justify-between items-center  mt-4 gap-2'>
-                                <div className='text-lg p-3'>{loading ? "Loading..." : (faces && faces.length > 0 ? faces.length : "No") + " face(s) detected"}</div>
+                            {image && (<div className='flex flex-col md:flex-row justify-between items-center  mt-4 gap-2'>
+                                <div className='text-lg py-3'>{loading ? "Loading..." : (faces && faces.length > 0 ? faces.length : "No") + " face(s) detected"}</div>
                                 {file && faces && (
                                     <>
                                         <DropdownMenu
