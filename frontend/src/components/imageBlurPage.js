@@ -2,6 +2,7 @@ import FileUploader from './fileUploader';
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import AsyncButton from './asyncButton.js';
 import useAsync from './useAsync.js';
+import DropdownMenu from './dropdownMenu.js';
 
 const fetchFaceDetections = async (file) => {
     const formData = new FormData();
@@ -22,11 +23,12 @@ const fetchFaceDetections = async (file) => {
     return data.faces;
 };
 
-const fetchBlurredImage = async (file, detections) => {
+const fetchBlurredImage = async (file, detections, style = 'Blur') => {
     const formData = new FormData();
     formData.append('image', file);
     formData.append('detections', JSON.stringify(detections));
     formData.append('type', 'image');
+    formData.append('style', style.toLowerCase())
     const response = await fetch('https://faceblur-production.up.railway.app/blur', {
         method: 'POST',
         body: formData,
@@ -62,6 +64,13 @@ function ImageBlurPage() {
     const { loading, error, result: faces, execute: uploadFile } = useAsync(fetchFaceDetections);
     const imageRef = useRef(null);
     const [imageHeight, setImageHeight] = useState(null)
+    const [selectedOption, setSelectedOption] = useState(null);
+
+    const blurOptions = ['Blur', 'Smile'];
+
+    const handleOptionSelect = (option) => {
+        setSelectedOption(option);
+    };
 
     useEffect(() => {
         function handleResize() {
@@ -107,9 +116,9 @@ function ImageBlurPage() {
     }, []);
 
     return (
-        <div className="container content-center w-screen ml-10 mb-10">
-            <div className='container bg-white max-w-full lg:h-[80vh] p-16 rounded-xl'>
-                <div className="flex flex-col px-4 h-full w-full max-w-full items-center lg:flex-row justify-between">
+        <div className="container content-center w-screen ml-10 mb-10 overflow-x-hidden">
+            <div className='container bg-white max-w-screen mr-20 lg:h-[80vh] p-16 rounded-xl'>
+                <div className="flex flex-col px-4 h-full w-full max-w-full items-center lg:flex-row md:text-left text-center justify-between">
                     <div className='flex-1 flex flex-col lg:mb-0 mb-10 max-w-lg justify-center'>
                         <h1 className="text-5xl font-bold mb-10">Blur an Image</h1>
                         <h1 className='text-2xl mb-5 text-wrap'>After uploading an image, tap on the 🟥 faces you want to keep unblurred.</h1>
@@ -127,13 +136,24 @@ function ImageBlurPage() {
                                     </button>
                                 </div>
                             )}
-                            {image && (<div className='flex justify-between'>
-                                <div className='text-xl p-6 mt-4'>{loading ? "Loading..." : (faces && faces.length > 0 ? faces.length : "No") + " face(s) detected"}</div>
-                                {file && faces && (<AsyncButton title="Blur Image!" onClick={async () => {
-                                    const detections = faces.filter((_, index) => faceVisibility[index]);
-                                    await fetchBlurredImage(file, detections)
-                                }}
-                                    disabled={loading || (faces && faces.length === 0)} />)}
+                            {image && (<div className='flex flex-col md:flex-row justify-between items-center  mt-4 gap-2'>
+                                <div className='text-lg py-3'>{loading ? "Loading..." : (faces && faces.length > 0 ? faces.length : "No") + " face(s) detected"}</div>
+                                {file && faces && (
+                                    <>
+                                        <DropdownMenu
+                                            options={blurOptions}
+                                            defaultOption={blurOptions[0]}
+                                            onSelect={handleOptionSelect}
+                                            className='bg-gray-500 m-auto text-white font-bold py-4 px-8 rounded text-lg hover:bg-gray-400 focus:outline-none focus:bg-gray-700' />
+                                        <AsyncButton title="See Result!" onClick={async () => {
+                                            const detections = faces.filter((_, index) => faceVisibility[index]);
+                                            await fetchBlurredImage(file, detections, selectedOption)
+                                        }}
+                                            disabled={loading || (faces && faces.length === 0)}
+                                            className='text-white font-bold py-4 px-8 rounded text-lg'
+                                        />
+                                    </>
+                                )}
                             </div>
                             )}
                         </div>
@@ -143,9 +163,7 @@ function ImageBlurPage() {
                         {image && <div className='relative'>
                             {loading && <div
                                 className={`absolute inset-0 bg-white opacity-50 flex items-center justify-center`}
-                            >
-                                Loading...
-                            </div>}
+                            ></div>}
                             <img
                                 ref={imageRef}
                                 id='uploaded-image'
