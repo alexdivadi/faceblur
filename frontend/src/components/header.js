@@ -18,6 +18,11 @@ function Header() {
                                 Blur
                             </NavLink>
                         </li>
+                        <li>
+                            <NavLink to="/about" className="text-lg text-gray-900 hover:text-amber-600">
+                                About
+                            </NavLink>
+                        </li>
                     </ul>
                 </nav>
             </div>

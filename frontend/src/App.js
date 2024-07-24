@@ -5,6 +5,7 @@ import ImageBlurPage from './components/imageBlurPage.js';
 import Header from './components/header.js';
 import Footer from './components/footer.js';
 import NotFoundPage from './components/notFoundPage.js';
+import AboutPage from './components/aboutPage.js';
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/image-blur" element={<ImageBlurPage />} />
+            <Route path="/about" element={<AboutPage />} />
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </main>
