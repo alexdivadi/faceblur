@@ -136,7 +136,7 @@ function ImageBlurPage() {
                                     </button>
                                 </div>
                             )}
-                            {image && (<div className='flex flex-col md:flex-row justify-between items-center  mt-4 gap-2'>
+                            {image && !error && (<div className='flex flex-col md:flex-row justify-between items-center  mt-4 gap-2'>
                                 <div className='text-lg py-3'>{loading ? "Loading..." : (faces && faces.length > 0 ? faces.length : "No") + " face(s) detected"}</div>
                                 {file && faces && (
                                     <>
@@ -171,7 +171,7 @@ function ImageBlurPage() {
                                 alt="Uploaded"
                                 className="block w-full max-h-full object-contain justify-self-center" />
                             <div className='absolute inset-0 max-h-full ' style={{ maxHeight: imageHeight ? `${imageHeight}px` : "auto" }}>
-                                {faces && !loading && faces.map(([x, y, w, h], index) => (
+                                {faces && !loading && !error && faces.map(([x, y, w, h], index) => (
                                     <div
                                         key={index}
                                         onClick={() => toggleFaceVisibility(index)}
