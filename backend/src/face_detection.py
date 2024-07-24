@@ -7,7 +7,7 @@ from src.face import Face
 from src.sface import SFace
 from src.styles import BlurStyle
 from src.yunet import YuNet
-from src.file import HOME
+from src.file import HOME, encode_image
 
 
 DETECTION_MODEL_PATH = os.path.join(HOME, "model/face_detection_yunet_2023mar.onnx")
@@ -153,7 +153,7 @@ def blur_faces_img(img: cv2.typing.MatLike, detections: list, filetype: str = 'p
         blur_segment = img[y1:y2, x1:x2]
         img[y1:y2, x1:x2] = cv2.GaussianBlur(blur_segment, (k, k), 0, borderType=cv2.BORDER_DEFAULT)
 
-    return cv2.imencode(filetype, img)[1].tobytes(), img_h, img_w
+    return encode_image(filetype, img), img_h, img_w
 
 def smile_faces_img(img: cv2.typing.MatLike, detections: list, filetype: str = 'png') -> tuple[bytes, int, int]:
     """
@@ -178,7 +178,7 @@ def smile_faces_img(img: cv2.typing.MatLike, detections: list, filetype: str = '
             img[y1:y2, x1:x2, c] = (alpha_s * resized_smile[:, :, c] +
                               alpha_l * img[y1:y2, x1:x2, c])
 
-    return cv2.imencode(filetype, img)[1].tobytes(), img_h, img_w
+    return encode_image(filetype, img), img_h, img_w
 
 def obscure_faces(style:BlurStyle, img: cv2.typing.MatLike, detections: list, filetype: str):
     """

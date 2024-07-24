@@ -15,3 +15,12 @@ def read_image(file) -> cv2.typing.MatLike:
     filestr = file.read()
     file_bytes = np.fromstring(filestr, np.uint8)
     return cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
+
+def encode_image(ext, img) -> bytes:
+    try:
+        output = cv2.imencode(ext, img)[1].tobytes()
+    except Exception as e:
+        print(f'Error encoding string: {e} Encoding to PNG.')
+        output = cv2.imencode('.png', img)[1].tobytes()
+    finally:
+        return output
