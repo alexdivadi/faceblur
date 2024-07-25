@@ -117,7 +117,7 @@ function ImageBlurPage() {
     }, []);
 
     return (
-        <div className="container content-center w-screen p-10 md:mb-10">
+        <div className="container content-center w-screen py-10 px-3 md:px-10 md:mb-10">
             <div className='container bg-white max-w-screen lg:h-[80vh] py-16 md:px-16 px-4 rounded-xl'>
                 <div className="flex flex-col px-4 h-full w-full max-w-full items-center lg:flex-row md:text-left text-center justify-between">
                     <div className='flex-1 flex flex-col lg:mb-0 mb-10 max-w-lg justify-center'>
@@ -159,7 +159,7 @@ function ImageBlurPage() {
                             )}
                         </div>
                     </div>
-                    <div id='preview' className='flex-1 ml-10 flex justify-center container h-full w-full'
+                    <div id='preview' className='flex-1 md:ml-10 flex justify-center container h-full w-full'
                         style={imageRef.current && imageRef.current.naturalHeight <= imageRef.current.naturalWidth ? { alignItems: 'center' } : {}}>
                         {image && <div className='relative'>
                             {loading && <div

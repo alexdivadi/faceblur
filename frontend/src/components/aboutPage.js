@@ -1,8 +1,8 @@
 import React from "react";
 
 function AboutPage() {
-    return <div className="w-screen py-10">
-        <div className="bg-white py-20 px-4 sm:px-8 md:px-16 lg:px-20 ml-10 mr-16 text-justify rounded-xl">
+    return <div className="w-screen py-10 px-3 md:px-10">
+        <div className="bg-white py-20 px-4 sm:px-8 md:px-16 lg:px-20 text-justify rounded-xl">
             <h1 className="text-3xl md:text-left text-center sm:text-4xl font-bold text-gray-800 mb-12">About Us</h1>
             <div className="flex flex-col justify-center">
                 <p className="text-xl leading-relaxed mb-20">
