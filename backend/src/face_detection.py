@@ -5,9 +5,8 @@ import numpy as np
 
 from src.face import Face
 from src.sface import SFace
-from src.styles import BlurStyle
 from src.yunet import YuNet
-from src.file import HOME, encode_image
+from src.file import HOME
 
 
 DETECTION_MODEL_PATH = os.path.join(HOME, "model/face_detection_yunet_2023mar.onnx")
@@ -134,65 +133,7 @@ def detect_video(path, min_seconds: float = 0.5):
 
     return seen_faces
 
-def blur_faces_img(img: cv2.typing.MatLike, detections: list, filetype: str = 'png') -> tuple[bytes, int, int]:
-    """
-    Save image with blur effect applied
-    
-    Returns: bytes, height, width
-    """
-    img_h, img_w = img.shape[:2]
 
-    for face in detections:
-        [x1, y1, w, h] = face 
-        x2 = min(x1 + w, img_w)
-        y2 = min(y1 + h, img_h)
-        x1 = max(x1, 0)
-        y1 = max(y1, 0)
-        k = 2 * int(min(w, h) * 0.2) + 1
-
-        blur_segment = img[y1:y2, x1:x2]
-        img[y1:y2, x1:x2] = cv2.GaussianBlur(blur_segment, (k, k), 0, borderType=cv2.BORDER_DEFAULT)
-
-    return encode_image(filetype, img), img_h, img_w
-
-def smile_faces_img(img: cv2.typing.MatLike, detections: list, filetype: str = 'png') -> tuple[bytes, int, int]:
-    """
-    Save image with smiley face effect applied
-    
-    Returns: bytes, height, width
-    """
-    img_h, img_w = img.shape[:2]
-    smiley_face: cv2.typing.MatLike = cv2.imread(os.path.join(HOME, "assets/smiling-emoji.png"), -1)
-
-    for face in detections:
-        [x1, y1, w, h] = face 
-        x2 = min(x1 + w, img_w)
-        y2 = min(y1 + h, img_h)
-        x1 = max(x1, 0)
-        y1 = max(y1, 0)
-        resized_smile = cv2.resize(smiley_face, (x2-x1, y2-y1))
-        alpha_s = resized_smile[:, :, 3] / 255.0
-        alpha_l = 1.0 - alpha_s
-
-        for c in range(3):
-            img[y1:y2, x1:x2, c] = (alpha_s * resized_smile[:, :, c] +
-                              alpha_l * img[y1:y2, x1:x2, c])
-
-    return encode_image(filetype, img), img_h, img_w
-
-def obscure_faces(style:BlurStyle, img: cv2.typing.MatLike, detections: list, filetype: str):
-    """
-    Save image with chosen blur effect applied
-    
-    Returns: bytes, height, width
-    """
-    match style:
-        case BlurStyle.BLUR:
-            return blur_faces_img(img, detections, filetype)
-        case BlurStyle.SMILE:
-            return smile_faces_img(img, detections, filetype)
-        case _:
-            raise ValueError(f'Function `obscure_faces` received an invalid style: {style}')
 
 # def blur_video(f, blur_faces=True):
 #     """

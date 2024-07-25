@@ -6,8 +6,9 @@ import base64
 import json
 import os
 
-from src.file import save, read_image
-from src.face_detection import detect_img, obscure_faces, detect_video
+from src.file import save, read_image_from_path
+from src.face_detection import detect_img, detect_video
+from src.img_manipulation import obscure_faces
 from src.styles import BlurStyle
 
 app = Flask(__name__)
@@ -22,14 +23,18 @@ def detect():
     Params: image: file, video: file, type: str
     """
     response = {}
+    uploaded_file = ''
 
     try:
         detect_type = request.form['type']
 
         if detect_type == 'image':
             file = request.files['image']
+            name = secure_filename(file.filename)
+            ext = Path(name).suffix
+            uploaded_file = save(file, name)
 
-            img = read_image(file)
+            img = read_image_from_path(uploaded_file)
             faces = detect_img(img)
 
             response['faces'] = faces
@@ -48,10 +53,14 @@ def detect():
             response['num_of_faces'] = len(faces)
 
     except Exception as e:
+        print(e)
         response['error'] = {
             'code': 500,
             'args': e.args,
         }
+    finally:
+        if uploaded_file:
+            Path.unlink(Path(uploaded_file), missing_ok=True)
 
     return Response(json.dumps(response))
 
@@ -64,6 +73,7 @@ def blur():
     Params: image: file, video: file, type: str, style: str, detections: list[list[int]] as text
     """
     response = {}
+    uploaded_file = ''
 
     try:
         detect_type = request.form['type']
@@ -73,8 +83,9 @@ def blur():
             name = secure_filename(file.filename)
             mimetype = file.content_type
             ext = Path(name).suffix
+            uploaded_file = save(file, f'upload{ext}')
 
-            img = read_image(file)
+            img = read_image_from_path(uploaded_file)
             detections: list = json.loads(request.form['detections'])
             style: BlurStyle = BlurStyle(request.form.get('style', default='blur'))
             
@@ -89,10 +100,15 @@ def blur():
             pass
 
     except Exception as e:
+        print(e)
         response['error'] = {
             'code': 500,
             'args': e.args,
         }
+
+    finally:
+        if uploaded_file:
+            Path.unlink(Path(uploaded_file), missing_ok=True)
 
     return Response(json.dumps(response))
 
