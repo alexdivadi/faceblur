@@ -3,12 +3,13 @@ import React, { useState, useCallback, useEffect, useRef } from 'react';
 import AsyncButton from './asyncButton.js';
 import useAsync from './useAsync.js';
 import DropdownMenu from './dropdownMenu.js';
+import { baseUrl } from '../config/const.js';
 
 const fetchFaceDetections = async (file) => {
     const formData = new FormData();
     formData.append('image', file);
     formData.append('type', 'image');
-    const response = await fetch('https://faceblur-production.up.railway.app/detect', {
+    const response = await fetch(`${baseUrl}/detect`, {
         method: 'POST',
         body: formData,
     });
@@ -29,7 +30,7 @@ const fetchBlurredImage = async (file, detections, style = 'Blur') => {
     formData.append('detections', JSON.stringify(detections));
     formData.append('type', 'image');
     formData.append('style', style.toLowerCase())
-    const response = await fetch('https://faceblur-production.up.railway.app/blur', {
+    const response = await fetch(`${baseUrl}/blur`, {
         method: 'POST',
         body: formData,
         responseType: 'blob',
@@ -116,8 +117,8 @@ function ImageBlurPage() {
     }, []);
 
     return (
-        <div className="container content-center w-screen ml-10 mb-10 overflow-x-hidden">
-            <div className='container bg-white max-w-screen mr-20 lg:h-[80vh] p-16 rounded-xl'>
+        <div className="container content-center w-screen p-10 md:mb-10">
+            <div className='container bg-white max-w-screen lg:h-[80vh] py-16 md:px-16 px-4 rounded-xl'>
                 <div className="flex flex-col px-4 h-full w-full max-w-full items-center lg:flex-row md:text-left text-center justify-between">
                     <div className='flex-1 flex flex-col lg:mb-0 mb-10 max-w-lg justify-center'>
                         <h1 className="text-5xl font-bold mb-10">Blur an Image</h1>
