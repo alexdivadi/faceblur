@@ -3,7 +3,7 @@ import { NavLink } from 'react-router-dom';
 
 function Header() {
     return (
-        <header className="text-gray-800 px-20 py-4">
+        <header className="text-gray-800 md:px-20 px-10 py-4">
             <div className="container mx-auto flex justify-between items-center py-5">
                 <div className="text-3xl font-bold text-gray-900">FaceBlur</div>
                 <nav>
