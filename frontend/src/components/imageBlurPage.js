@@ -64,10 +64,11 @@ function ImageBlurPage() {
     const [faceVisibility, setFaceVisibility] = useState([]);
     const { loading, error, result: faces, execute: uploadFile } = useAsync(fetchFaceDetections);
     const imageRef = useRef(null);
-    const [imageHeight, setImageHeight] = useState(null)
-    const [selectedOption, setSelectedOption] = useState(null);
+    const [imageHeight, setImageHeight] = useState(null);
 
     const blurOptions = ['Blur', 'Smile'];
+    const [selectedOption, setSelectedOption] = useState(blurOptions[0]);
+
 
     const handleOptionSelect = (option) => {
         setSelectedOption(option);
