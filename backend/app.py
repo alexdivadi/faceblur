@@ -85,11 +85,10 @@ def blur():
             ext = Path(name).suffix
             uploaded_file = save(file, f'upload{ext}')
 
-            img = read_image_from_path(uploaded_file)
             detections: list = json.loads(request.form['detections'])
             style: BlurStyle = BlurStyle(request.form.get('style', default='blur'))
             
-            data, h, w = obscure_faces(style, img, detections=detections, filetype=ext)
+            data, h, w = obscure_faces(style, read_image_from_path(uploaded_file), detections=detections, filetype=ext)
             data = base64.b64encode(data).decode() 
 
             response['img'] = data
