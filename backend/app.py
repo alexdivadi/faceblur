@@ -7,7 +7,7 @@ import json
 import os
 
 from src.file import save, read_image_from_path
-from src.face_detection import detect_img, detect_video
+from src.face_detection import detect_img
 from src.img_manipulation import obscure_faces
 from src.styles import BlurStyle
 
