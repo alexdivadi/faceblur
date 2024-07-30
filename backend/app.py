@@ -34,23 +34,23 @@ def detect():
             ext = Path(name).suffix
             uploaded_file = save(file, name)
 
-            img = read_image_from_path(uploaded_file)
-            faces = detect_img(img)
+            faces = detect_img(read_image_from_path(uploaded_file))
 
             response['faces'] = faces
             response['num_of_faces'] = len(faces)
 
         elif detect_type == 'video':
-            file = request.files['video']
-            name = secure_filename(file.filename)
-            ext = Path(name).suffix
+            pass
+            # file = request.files['video']
+            # name = secure_filename(file.filename)
+            # ext = Path(name).suffix
 
-            uploaded_file = save(file, f'upload{ext}')
-            faces = detect_video(uploaded_file)
-            Path.unlink(uploaded_file)
+            # uploaded_file = save(file, f'upload{ext}')
+            # faces = detect_video(uploaded_file)
+            # Path.unlink(uploaded_file)
 
-            response['faces'] = [face.label for face in faces]
-            response['num_of_faces'] = len(faces)
+            # response['faces'] = [face.label for face in faces]
+            # response['num_of_faces'] = len(faces)
 
     except Exception as e:
         print(e)
